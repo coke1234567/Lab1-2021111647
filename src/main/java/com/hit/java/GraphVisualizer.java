@@ -1,8 +1,6 @@
 package com.hit.java;
 
-import guru.nidi.graphviz.attribute.Color;
-import guru.nidi.graphviz.attribute.ForLink;
-import guru.nidi.graphviz.attribute.LinkAttr;
+
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.*;
