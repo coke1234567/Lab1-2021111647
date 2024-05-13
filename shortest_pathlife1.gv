@@ -1,0 +1,24 @@
+digraph G{
+new [color=red];
+worlds;
+explore [color=red];
+and;
+to [color=red];
+civilizations;
+seek;
+life [color=red];
+strange [color=red];
+out;
+new->worlds[label=1];
+new->civilizations[label=1];
+new->life[label=1, color=blue];
+worlds->to[label=1];
+explore->strange[label=1, color=blue];
+and->new[label=1];
+to->explore[label=1, color=blue];
+to->seek[label=1];
+seek->out[label=1];
+strange->new[label=1, color=blue];
+life->and[label=1];
+out->new[label=1];
+}
