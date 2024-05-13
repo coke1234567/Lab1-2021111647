@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import java.util.*;
 
 public class calshortestpaths {
     private static Map<String, Boolean> inQueue = new HashMap<>();
@@ -14,15 +13,9 @@ public class calshortestpaths {
     private static List<String> tmpPath = new ArrayList<>();
     private static List<String> paths = new ArrayList<>();
 
-    /**
-     * Init auxiliary array for spfa.
-     * <p>
-     * inQueue: whether the node is in the queue.<br>
-     * dis: the distance from source to the node.
-     *
-     * @param G
-     */
+
     private static void init(Map<String, Map<String, Integer>> G) {
+        //初始化数据结构和距离数组
         inQueue.clear();
         dis.clear();
         for (String node : G.keySet()) {
@@ -31,16 +24,11 @@ public class calshortestpaths {
         }
     }
 
-    /**
-     * calculate the distance from source to all other node by spfa.
-     *
-     * @param G Graph
-     * @param st source node
-     */
+
+    //用于计算源节点到途中其他节点的最短路径 时间复杂度O(VE)
     private static void spfa(Map<String, Map<String, Integer>> G, String st) {
         List<String> Q = new ArrayList<>();
         String u;
-
         init(G);
         Q.add(st);
         inQueue.put(st, true);
@@ -63,13 +51,7 @@ public class calshortestpaths {
         }
     }
 
-    /**
-     * find all path by dfs on the shortest path graph.
-     *
-     * @param G Graph
-     * @param u now node
-     * @param ed target node
-     */
+    //深度有限搜索
     private static void dfs(Map<String, Map<String, Integer>> G, String u, String ed) {
         if (u.equals(ed)) {
             StringBuilder path = new StringBuilder();
@@ -92,38 +74,13 @@ public class calshortestpaths {
         }
     }
 
-    /**
-     * calculate all shortest path from node word1 to word2.
-     *
-     * @param G Graph
-     * @param word1 String
-     * @param word2 String
-     * @return a list of all shortest path. each path is like this<br>
-     *         A-&gt;B-&gt;C
-     */
+
     public static List<String> calcShortestPath(Map<String, Map<String, Integer>> G, String word1, String word2) {
         tmpPath.clear();
         paths.clear();
-        if ((word1 != null && !G.containsKey(word1)) || (word2 != null && !G.containsKey(word2)))
-            return paths;
         spfa(G, word1);
         dfs(G, word1, word2);
         return paths;
     }
 
-    /**
-     * calculate all distance from node word1 to word2 without path.
-     *
-     * @param G Graph
-     * @param word1 String
-     * @param word2 String
-     * @return Integer distance
-     */
-    public static Integer calcPathDistance(Map<String, Map<String, Integer>> G, String word1, String word2) {
-        spfa(G, word1);
-        if (dis.get(word2).equals(INF))
-            return -1;
-        else
-            return dis.get(word2);
-    }
 }

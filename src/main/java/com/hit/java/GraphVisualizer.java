@@ -68,9 +68,9 @@ public class GraphVisualizer {
     }
 
     public static void showDirectedGraph(Map<String, Map<String, Integer>> graph) {
+
         StringBuilder dotText = new StringBuilder();
         dotText.append(String.format("digraph G{"+newLine));
-
         Set<String> nodeNames = new HashSet<>();
 
         // 遍历外层 Map 来获取所有的节点名
@@ -121,6 +121,7 @@ public class GraphVisualizer {
     }
 
     private static void saveandshow(String dotFile,int label,String word) {
+        //给生成的文件命名
         String outputFile = null;
         if(label == 0){
             outputFile = "origin.png";
@@ -203,10 +204,7 @@ public class GraphVisualizer {
                 String node1 = path.get(i);
                 String node2 = path.get(i + 1);
                 // 检查当前行是否定义了一个边，并且边的起点和终点都在路径中
-
                 if (line.trim().matches(node1 + "->" + node2 + "\\[.*\\];")) {
-                    // 标记为红色
-//                    line = line.replaceFirst("(\\[.*\\])", "[color=blue, $1");
                     // 定义正则表达式
                     String regex = "\\[label=(\\d+)\\]";
 
@@ -223,13 +221,8 @@ public class GraphVisualizer {
 
             }
 
-            // 检查当前节点是否是路径的起点或终点
+            // 对经过的节点标红
             for (String node : pathSet) {
-//                if (line.trim().startsWith(node + ";")) {
-//                    // 如果是起点或终点，则标记为黄色
-//                    line = line.replaceFirst("(\\[.*\\])", "[color=yellow, $1");
-//                    break;
-//                }
                     // 确保node以;结尾
                     String nodeWithSemicolon = node + ";";
                     if (line.trim().equals(nodeWithSemicolon)) {
@@ -243,7 +236,6 @@ public class GraphVisualizer {
                         }
                     }
             }
-
             modifiedDotContent.append(line).append("\n");
         }
 
