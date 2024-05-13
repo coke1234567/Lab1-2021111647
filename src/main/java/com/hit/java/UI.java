@@ -123,10 +123,7 @@ public class UI extends JFrame {
         randomWalkButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                isPaused = false;
-//                synchronized (randomWalkButton) {
-//                    randomWalkButton.notifyAll();
-//                }
+
                 stopRequested.set(false);
                 // 创建 SwingWorker 对象
                 SwingWorker<String, Void> worker = new SwingWorker<String, Void>()
