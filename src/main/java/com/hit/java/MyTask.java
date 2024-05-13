@@ -9,7 +9,7 @@ public class MyTask implements Runnable {
 
     @Override
     public void run() {
-        // 在这里使用 parameter 参数
+
     }
 }
 
