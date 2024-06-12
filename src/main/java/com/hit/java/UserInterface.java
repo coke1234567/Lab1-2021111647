@@ -12,6 +12,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +36,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+
 /**
  * A UI class for visualizing and interacting with a directed graph
  * generated from a text file.
@@ -43,6 +49,8 @@ public class UserInterface extends JFrame {
   private final JTextField word2Field;
   private final JTextField newTextField;
   private final AtomicBoolean stopRequested = new AtomicBoolean(false);
+  // 在UserInterface类中声明SecureRandom实例
+  private final SecureRandom secureRandom = new SecureRandom();
 
   private  boolean flag = true;
 
@@ -138,31 +146,33 @@ public class UserInterface extends JFrame {
           textArea.setText("");
           textArea.append("Please press Load Text File button first!\n");
         } else {
-          textArea.setText("");
-          if (word1.isEmpty() && !word2.isEmpty()) {
-            flag = true;
-            // 遍历图中的所有节点，计算源节点到所有节点的最短路径
-            for (String node : graph.keySet()) {
-                if (!node.equals(word2)) {
-                    String shortestPath = calcShortestPath(node, word2);
-                    textArea.append(shortestPath + "\n");
+            textArea.setText("");
+            if (word1 != null && word2 != null) { // 确保 word1 和 word2 不为 null
+                if (word1.isEmpty() && !word2.isEmpty()) {
+                  flag = true;
+                  // 遍历图中的所有节点，计算源节点到所有节点的最短路径
+                  for (String node : graph.keySet()) {
+                    if (!node.equals(word2)) {
+                      String shortestPath = calcShortestPath(node, word2);
+                      textArea.append(shortestPath + "\n");
+                    }
+                  }
+                } else if (word2.isEmpty() && !word1.isEmpty()) {
+                  flag = false;
+                  // 遍历图中的所有节点，计算源节点到所有节点的最短路径
+                  for (String node : graph.keySet()) {
+                    if (!node.equals(word1)) {
+                      String shortestPath = calcShortestPath(word1, node);
+                      textArea.append(shortestPath + "\n");
+                    }
+                  }
+                } else { // word1 和 word2 均不为空
+                  String result = calcShortestPath(word1, word2);
+                  textArea.append(result + "\n");
                 }
+            } else {
+                textArea.append("please input at least one node name!" + "\n");
             }
-          } else if (word2.isEmpty() && !word1.isEmpty()) {
-            flag = false;
-            // 遍历图中的所有节点，计算源节点到所有节点的最短路径
-            for (String node : graph.keySet()) {
-                if (!node.equals(word1)) {
-                    String shortestPath = calcShortestPath(word1, node);
-                    textArea.append(shortestPath + "\n");
-                }
-            }
-          } else if ((word2 != null) && (word1 != null)) {
-            String result = calcShortestPath(word1, word2);
-            textArea.append(result + "\n");
-          } else { //若没有输入则输出提示
-            textArea.append("please input at least one node name!" + "\n");
-          }
         }
       }
     });
@@ -175,8 +185,6 @@ public class UserInterface extends JFrame {
           stopRequested.set(false);
           if (graph.isEmpty()) {
             textArea.append("Please press Load Text File button first!\n");
-          } else {
-            String result = randomWalk();
           }
         }
     });
@@ -235,7 +243,16 @@ public class UserInterface extends JFrame {
   */
   public void processTextFile(String filePath) {
     graph.clear(); // 清空之前的图
-    try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+    // 验证并规范化文件路径
+    //    Path file = Paths.get(filePath).normalize();
+    Path file = Paths.get(filePath).toAbsolutePath().normalize(); // 使用绝对路径确保安全
+    // 验证文件路径的安全性
+    if (!Files.isRegularFile(file) || !Files.exists(file)) {
+      System.err.println("Invalid file path or file does not exist.");
+      return;
+    }
+    //try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+    try (BufferedReader reader = Files.newBufferedReader(file)) {
       String line;
       String previousWord = null;
       while ((line = reader.readLine()) != null) {
@@ -280,6 +297,8 @@ public class UserInterface extends JFrame {
     }
   }
 
+
+
   /**
      * Queries bridge words between two given words.
   */
@@ -321,7 +340,7 @@ public class UserInterface extends JFrame {
   public String generateNewText(String inputText) {
     String[] words = inputText.toLowerCase().split("\\s+");
     StringBuilder newText = new StringBuilder();
-    Random random = new Random();
+    //Random random = new Random();
     for (int i = 0; i < words.length - 1; i++) {
       String word1 = words[i];
       String word2 = words[i + 1];
@@ -337,7 +356,8 @@ public class UserInterface extends JFrame {
         newText.append(word1).append(" ");
         //选择一个桥接词插入
         if (!bridgeWords.isEmpty()) {
-          int randomIndex = random.nextInt(bridgeWords.size());
+          //int randomIndex = random.nextInt(bridgeWords.size());
+          int randomIndex = secureRandom.nextInt(bridgeWords.size());
           newText.append(bridgeWords.get(randomIndex)).append(" ");
         }
       } else {
@@ -355,36 +375,30 @@ public class UserInterface extends JFrame {
     if (graph.containsKey(word1) && graph.containsKey(word2)) {
       List<String> paths = CalcShortestPaths.calcShortestPath(graph, word1, word2);
       System.out.println(paths);
-      List<List<String>> wordLists = new ArrayList<>();
+      StringBuilder result = new StringBuilder();
+      int i = 1;
+      String tmp = flag ? word1 : word2;
       for (String input : paths) {
-        // 使用箭头"->"作为分隔符分割字符串
         String[] words = input.split("->");
-        // 将分割后的单词数组转换为列表
-        List<String> wordList = new ArrayList<>(Arrays.asList(words));
-        wordLists.add(wordList);
-      }
-      String res = "";
-      Integer i = 1;
-      String tmp;
-      if (flag) {
-        tmp = word1;
-      } else {
-        tmp = word2;
-      }
-      for (List<String> singlepath : wordLists) {
-        GraphVisualizer.showshortest(singlepath, i, tmp);
-        String shortestPathLength = String.valueOf(singlepath.size() - 1);
-        res = res + "The shortest path from \"" + word1 + "\" to \"" + word2
-                +
-                "\" is: " + String.join(" -> ", singlepath)
-                +
-                "\n" + "The shortest path's length is " + shortestPathLength + "\n";
+        List<String> wordList = Arrays.asList(words); // 转换数组为列表
+        GraphVisualizer.showshortest(wordList, i, tmp); // 调用时传递列表参数
+        StringBuilder pathBuilder = new StringBuilder();
+        for (String word : words) {
+          pathBuilder.append(" -> ").append(word);
+        }
+        String path = pathBuilder.toString();
+        String shortestPathLength = String.valueOf(words.length - 1);
+        result.append("The shortest path from \"").append(word1).append("\" to \"").append(word2)
+              .append("\" is: ").append(path)
+              .append("\n").append("The shortest path's "
+                        +
+                        "length is ").append(shortestPathLength).append("\n");
         i++;
       }
-      if (res.isEmpty()) {
-        res = "cannot reach!\n";
+      if (result.length() == 0) {
+        result.append("cannot reach!\n");
       }
-      return res;
+      return result.toString();
     } else {
       return "node does not exist！";
     }
@@ -406,7 +420,7 @@ public class UserInterface extends JFrame {
             //初始化路径
             List<String> walk = new ArrayList<>();
             Set<String> visitedEdges = new HashSet<>();
-            Random random = new Random();
+            //Random random = new Random();
             textArea.setText("");
             textArea.append(currentNode);
             //开始随机游走
@@ -416,6 +430,7 @@ public class UserInterface extends JFrame {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                int random = secureRandom.nextInt(1000); // bound为实际需要的上限
                 SwingUtilities.invokeLater(() -> textArea.append("Random walk interrupted."));
             }
             walk.add(currentNode);
@@ -465,7 +480,11 @@ public class UserInterface extends JFrame {
    */
   public void writeWalkToFile(String walkText) throws IOException {
     String fileName = "random_walk_result.txt";
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+    //    try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+    //      writer.write(walkText);
+    //    }
+    Path filePath = Paths.get(fileName);
+    try (BufferedWriter writer = Files.newBufferedWriter(filePath, StandardCharsets.UTF_8)) {
       writer.write(walkText);
     }
   }

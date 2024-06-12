@@ -5,9 +5,13 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +22,7 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+
 
 
 /**
@@ -66,24 +71,27 @@ public class GraphVisualizer {
     try {
       File tmpf = new File("/tmp");
       if (!tmpf.exists()) {
-        tmpf.mkdirs();
+        if (!tmpf.mkdirs()) {
+          throw new IOException("创建目录失败");
+        }
       }
-      FileWriter fw = new FileWriter(graphFilePath);
-      BufferedWriter bufw = new BufferedWriter(fw);
+      FileOutputStream fos = new FileOutputStream(graphFilePath);
+      OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+      BufferedWriter bufw = new BufferedWriter(osw);
       bufw.write(dotText.toString());
       bufw.close();
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to open file");
+    } catch (IOException e) {
+      throw new RuntimeException("打开文件或创建目录失败", e);
     }
     saveandshow("graph.gv", 0, "all");
   }
 
   /**
-     * Saves the DOT file and displays the generated image using Graphviz.
-     *
-     * @param dotFile The path to the DOT file to be processed.
-     * @param word    A string used in the output image filename.
-     */
+   * Saves the DOT file and displays the generated image using Graphviz.
+   *
+   * @param dotFile The path to the DOT file to be processed.
+   * @param word    A string used in the output image filename.
+   */
   private static void saveandshow(String dotFile, int label, String word) {
     String outputFile = null;
     if (label == 0) {
@@ -117,37 +125,50 @@ public class GraphVisualizer {
     }
   }
 
+
+  private static final String OUTPUT_DIRECTORY = "output/";
   /**
-     * Shows the shortest path in a DOT graph file with highlighted edges and nodes.
-     *
-     * @param path   The list of strings representing the path to highlight in the DOT graph.
-     * @param label  The label for identifying the type of shortest path (e.g., index, ID).
-     * @param word1  A string representing a word or identifier associated with the path.
-     */
+   * Shows the shortest path in a DOT graph file with highlighted edges and nodes.
+   *
+   * @param path   The list of strings representing the path to highlight in the DOT graph.
+   * @param label  The label for identifying the type of shortest path (e.g., index, ID).
+   * @param word1  A string representing a word or identifier associated with the path.
+   */
+
   public static void showshortest(List<String> path, int label, String word1) {
+    // 对文件路径进行规范化处理
     String dotFilePath = "graph.gv";
-    String outputFile = "shortest_path" + word1 + label + ".gv";
+    String outputFile = OUTPUT_DIRECTORY + "shortest_path" + word1 + label + ".gv";
     try {
-      // 读取DOT文件
-      BufferedReader reader = new BufferedReader(new FileReader(dotFilePath));
+      // 验证并过滤输入参数，确保仅包含预期的文件名
+      if (!isValidFileName(dotFilePath) || !isValidFileName(outputFile)) {
+        throw new IllegalArgumentException("Invalid file name.");
+      }
+      // 使用指定的字符编码读取DOT文件
+      BufferedReader reader = new BufferedReader(new
+              InputStreamReader(Files.newInputStream(Paths.get(dotFilePath)),
+              StandardCharsets.UTF_8));
       StringBuilder dotContent = new StringBuilder();
       String line;
       while ((line = reader.readLine()) != null) {
         dotContent.append(line).append("\n");
       }
       reader.close();
-      // 解析DOT文件并标记路径中的边为红色，起点和终点为黄色
+      // 解析DOT文件并标记路径
       String modifiedDotContent = highlightPathInDot(dotContent.toString(), path);
-      // 将修改后的DOT文件内容写入新的文件
-      FileWriter writer = new FileWriter(outputFile);
-      writer.write(modifiedDotContent);
-      writer.close();
-
-      System.out.println("Highlighted DOT file created: " + outputFile);
+      // 使用指定的字符编码写入文件
+      Files.write(Paths.get(outputFile), modifiedDotContent.getBytes(StandardCharsets.UTF_8));
+      System.out.println("已创建高亮显示的DOT文件：" + outputFile);
     } catch (IOException e) {
       e.printStackTrace();
     }
+
     saveandshow(outputFile, label, word1);
+  }
+
+  private static boolean isValidFileName(String fileName) {
+    // 验证文件名是否只包含预期字符
+    return fileName.matches("[a-zA-Z0-9-_]+\\.gv");
   }
 
   private static String highlightPathInDot(String dotContent, List<String> path) {
@@ -196,7 +217,6 @@ public class GraphVisualizer {
     return modifiedDotContent.toString();
   }
 }
-
 
 
 

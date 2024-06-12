@@ -92,6 +92,7 @@ public class CalcShortestPaths {
     paths.clear();
     spfa(graph, word1);
     dfs(graph, word1, word2);
-    return paths;
+    //return paths;
+    return new ArrayList<>(paths); // 返回 paths 的副本
   }
 }
