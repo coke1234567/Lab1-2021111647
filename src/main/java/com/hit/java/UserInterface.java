@@ -9,8 +9,6 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -185,6 +183,9 @@ public class UserInterface extends JFrame {
           stopRequested.set(false);
           if (graph.isEmpty()) {
             textArea.append("Please press Load Text File button first!\n");
+          } else {
+              String result = randomWalk();
+              System.out.println(result);
           }
         }
     });

@@ -140,10 +140,6 @@ public class GraphVisualizer {
     String dotFilePath = "graph.gv";
     String outputFile = OUTPUT_DIRECTORY + "shortest_path" + word1 + label + ".gv";
     try {
-      // 验证并过滤输入参数，确保仅包含预期的文件名
-      if (!isValidFileName(dotFilePath) || !isValidFileName(outputFile)) {
-        throw new IllegalArgumentException("Invalid file name.");
-      }
       // 使用指定的字符编码读取DOT文件
       BufferedReader reader = new BufferedReader(new
               InputStreamReader(Files.newInputStream(Paths.get(dotFilePath)),
