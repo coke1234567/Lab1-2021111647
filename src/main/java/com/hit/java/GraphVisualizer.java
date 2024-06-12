@@ -138,7 +138,7 @@ public class GraphVisualizer {
   public static void showshortest(List<String> path, int label, String word1) {
     // 对文件路径进行规范化处理
     String dotFilePath = "graph.gv";
-    String outputFile = OUTPUT_DIRECTORY + "shortest_path" + word1 + label + ".gv";
+    String outputFile =  "shortest_path" + word1 + label + ".gv";
     try {
       // 使用指定的字符编码读取DOT文件
       BufferedReader reader = new BufferedReader(new

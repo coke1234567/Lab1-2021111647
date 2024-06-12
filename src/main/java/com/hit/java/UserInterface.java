@@ -384,8 +384,14 @@ public class UserInterface extends JFrame {
         List<String> wordList = Arrays.asList(words); // 转换数组为列表
         GraphVisualizer.showshortest(wordList, i, tmp); // 调用时传递列表参数
         StringBuilder pathBuilder = new StringBuilder();
+        boolean isFirst = true;
         for (String word : words) {
-          pathBuilder.append(" -> ").append(word);
+          if (!isFirst) {
+            pathBuilder.append(" -> ");
+          } else {
+            isFirst = false;
+          }
+          pathBuilder.append(word);
         }
         String path = pathBuilder.toString();
         String shortestPathLength = String.valueOf(words.length - 1);
