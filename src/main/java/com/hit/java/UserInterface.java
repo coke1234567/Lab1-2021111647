@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
@@ -304,12 +303,16 @@ public class UserInterface extends JFrame {
      * Queries bridge words between two given words.
   */
   public String queryBridgeWords(String word1, String word2) {
-    if (!graph.containsKey(word1) && graph.containsKey(word2)) {
-      return "No \"" + word1 + "\" in the graph!";
-    } else if (!graph.containsKey(word2) && graph.containsKey(word1)) {
-      return "No \"" + word2 + "\" in the graph!";
-    } else if (!graph.containsKey(word1) && !graph.containsKey(word2)) {
-      return "No \"" + word1 + "\" and \"" + word2 + "\" in the graph!";
+    if (!graph.containsKey(word1)) {
+      if (graph.containsKey(word2)) {
+        return "No \"" + word1 + "\" in the graph!";
+      } else {
+        return "No \"" + word1 + "\" and \"" + word2 + "\" in the graph!";
+      }
+    } else {
+      if (!graph.containsKey(word2)) {
+        return "No \"" + word2 + "\" in the graph!";
+      }
     }
     List<String> bridgeWords = new ArrayList<>();
     for (String bridgeWord : graph.get(word1).keySet()) {
